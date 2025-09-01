@@ -1,0 +1,48 @@
+/*
+  Visual design goals:
+  - Minimal, center-focused circle.
+  - Dark, soft background so the motion stands out.
+  - Smooth animations; no flashing.
+*/
+
+:root {
+  --ball-size: 160px;
+  --glow-color: rgba(255, 255, 255, 0.2);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(1200px 800px at 50% 50%, #1f1a24 0%, #0e0c12 60%, #0a0910 100%);
+  color: #fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+#ball {
+  width: var(--ball-size);
+  height: var(--ball-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #5963ff, #2b2e4a 40%, #0b0c16 70%);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.04) inset,
+    0 8px 40px rgba(89, 99, 255, 0.25),
+    0 0 120px rgba(89, 99, 255, 0.18);
+  transform: translateY(0) scale(1);
+  transition: box-shadow 200ms ease;
+  will-change: transform;
+}
+
+/* Speaking state adds a subtle stronger glow */
+#ball.speaking {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.06) inset,
+    0 10px 50px rgba(89, 99, 255, 0.35),
+    0 0 160px rgba(89, 99, 255, 0.25);
+}
+
+
