@@ -7,7 +7,7 @@ Quickstart: https://github.com/google-gemini/cookbook/blob/main/quickstarts/Get_
 To install the dependencies for this script, run:
 
 ```
-pip install google-genai opencv-python pyaudio pillow mss
+pip install google-genai opencv-python pyaudio pillow mss numpy
 ```
 """
 
@@ -27,6 +27,9 @@ import argparse
 
 from google import genai
 from google.genai import types
+
+# Import the waveform UI
+from waveform_ui import WaveformUI
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -97,6 +100,9 @@ class AudioLoop:
         # avoid sending microphone audio to prevent feedback (the model hearing
         # itself). Implemented as an asyncio.Event for safe cross-task use.
         self.is_playing = asyncio.Event()
+        
+        # Initialize the waveform UI
+        self.waveform_ui = WaveformUI(width=800, height=150)
 
     async def send_text(self):
         while True:
@@ -251,6 +257,8 @@ class AudioLoop:
         )
         while True:
             bytestream = await self.audio_in_queue.get()
+            # Update the waveform UI with the audio data
+            self.waveform_ui.update_audio(bytestream)
             await asyncio.to_thread(stream.write, bytestream)
 
     async def run(self):
@@ -274,14 +282,20 @@ class AudioLoop:
 
                 tg.create_task(self.receive_audio())
                 tg.create_task(self.play_audio())
+                # Run the waveform UI on the main thread event loop
+                tg.create_task(self.waveform_ui.run())
 
                 await send_text_task
                 raise asyncio.CancelledError("User requested exit")
 
         except asyncio.CancelledError:
+            # Clean up the waveform UI
+            self.waveform_ui.close()
             pass
         except ExceptionGroup as EG:
             self.audio_stream.close()
+            # Clean up the waveform UI
+            self.waveform_ui.close()
             traceback.print_exception(EG)
 
 
